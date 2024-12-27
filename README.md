@@ -52,12 +52,14 @@ pip install -r requirements.txt
 4. Run the bridge.
 
 ```bash
-python viessmann-bridge/main.py
+python viessmann_bridge/main.py
 ```
 
 ## Disclaimer
 
 This project is not affiliated with Viessmann, and it's not an official solution. It's a hobby project, and it's provided as-is. Use it at your own risk.
+
+Huge thanks to the [PyViCare](https://github.com/openviess/PyViCare) project for the Viessmann API implementation.
 
 ## License
 

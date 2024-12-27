@@ -1,1 +1,1 @@
-python viessmann-bridge/main.py
+python viessmann_bridge/main.py
