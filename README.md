@@ -18,6 +18,8 @@ Tested with:
 
 ## How to configure?
 
+### Viessmann API
+
 Since the bridge uses the Viessmann API, you need to have a Viessmann account and a Vitoconnect device connected to your heating system. The bridge uses the same API as the Viessmann mobile app, so if you can see the data in the app, you can use the bridge.
 
 You need to configure the API client in the Viessmann developer portal and get the client ID.
@@ -29,6 +31,29 @@ You need to configure the API client in the Viessmann developer portal and get t
    - Google reCAPTCHA: Disabled
    - Redirect URIs: `vicare://oauth-callback/everest`
 4. Copy the `Client ID` to set it in the config later.
+
+### The bridge itself
+
+1. (Recommended) Create a virtual environment for the project.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+2. Install the required packages.
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Copy the `config.example.yaml` file to `config.yaml` and fill it with your data.
+
+4. Run the bridge.
+
+```bash
+python main.py
+```
 
 ## Disclaimer
 
