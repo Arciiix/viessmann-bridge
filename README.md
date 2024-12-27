@@ -11,6 +11,7 @@ Tested with:
 
 - **Gas consumption** - updates the realtime values (which are used for hourly consumption calculation) and the daily consumption
 - **Burner modulation** - updates the realtime value
+- **Boiler temperature** - updates the realtime value
 - Multiple unit support for consumption - kWh and m3
 - Focus on data correctness and reliability - especially when it comes to the data close to midnight/new day
 - Easy to use
@@ -52,7 +53,7 @@ pip install -r requirements.txt
 4. Run the bridge.
 
 ```bash
-python viessmann_bridge/main.py
+python main.py
 ```
 
 ## Disclaimer

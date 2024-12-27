@@ -4,3 +4,7 @@ config.yaml
 # venv
 venv/
 viessmann-venv/
+
+# Cache
+__pycache__/
+.my_cache/
