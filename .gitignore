@@ -1,5 +1,6 @@
 # Config
 config.yaml
+token.save
 
 # venv
 venv/

@@ -1,11 +1,12 @@
 from typing import Literal, Optional, Union
+from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 from pydantic_yaml import parse_yaml_raw_as
 
 from viessmann_bridge.logger import logger
 
 
-class ViessmanCreds(BaseModel):
+class ViessmannCreds(BaseModel):
     username: str
     password: str
     client_id: str
@@ -33,7 +34,8 @@ class HomeAssistantAction(Action):
 
 
 class Config(BaseModel):
-    viessmann_creds: ViessmanCreds
+    timezone: ZoneInfo
+    viessmann_creds: ViessmannCreds
     device_index: int = 0
 
     actions: list[Union[DomoticzAction, HomeAssistantAction]] = []
@@ -48,7 +50,7 @@ def get_config() -> Config:
     return GlobalConfig
 
 
-def load_config():
+def load_config() -> Config:
     global GlobalConfig
 
     if GlobalConfig is not None:
@@ -58,6 +60,9 @@ def load_config():
         with open("config.yaml", "r") as f:
             config = parse_yaml_raw_as(Config, f.read())
             GlobalConfig = config
+
+            logger.info("Config loaded")
+            return config
     except FileNotFoundError as e:
         logger.error("Config file not found")
         raise e
