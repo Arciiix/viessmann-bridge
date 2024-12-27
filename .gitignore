@@ -1,1 +1,6 @@
+# Config
 config.yaml
+
+# venv
+venv/
+viessmann-venv/
