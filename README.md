@@ -52,7 +52,7 @@ pip install -r requirements.txt
 4. Run the bridge.
 
 ```bash
-python main.py
+python viessman-bridge/main.py
 ```
 
 ## Disclaimer
