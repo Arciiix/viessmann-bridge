@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from viessmann_bridge.config import get_config
-
 
 def to_local_time(utc: datetime) -> datetime:
+    from viessmann_bridge.config import get_config
+
     config = get_config()
 
     local_dt = utc.astimezone(config.timezone)

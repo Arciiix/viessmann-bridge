@@ -37,10 +37,10 @@ class ViessmannBridge:
 
                 logger.debug(f"Daily values: {daily_values}")
 
-                await action.update_daily_consumption_stats(ctx, daily_values)
                 await action.update_current_total_consumption(
                     ctx, ctx.total_consumption
                 )
+                await action.update_daily_consumption_stats(ctx, daily_values)
 
             return
 
@@ -112,12 +112,15 @@ class ViessmannBridge:
     async def main_loop(self):
         logger.info("Starting working")
         config = get_config()
+
+        logger.debug("Sleeping 10 seconds before start")
+        await asyncio.sleep(10)
+
         while True:
-            logger.debug("Sleeping")
-            await asyncio.sleep(config.sleep_interval_seconds)
             logger.info(f"-- Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} --")
 
             # No concurrent calls because some of the actions might not be thread-safe
             await self.handle_gas_usage()
 
             logger.info("All tasks done")
+            await asyncio.sleep(config.sleep_interval_seconds)

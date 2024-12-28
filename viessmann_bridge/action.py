@@ -16,6 +16,10 @@ class DomoticzActionConfig(ActionConfig):
 
     domoticz_url: str
 
+    # If true, uses ?type=devices instead of ?type=command&param=getdevices
+    # Applies to Domoticz before 01.06.2023, please see: https://github.com/domoticz/domoticz-android/issues/692
+    use_legacy_device_endpoint: bool = False
+
     boiler_temp_idx: Optional[int] = None
     burner_modulation_idx: Optional[int] = None
     gas_consumption_m3_idx: Optional[int] = None
@@ -65,23 +69,6 @@ class Action:
             consumption (dict[date, int]): Gas consumption in kWh for each day
         """
         logger.debug(f"Updating daily consumption stats: {consumption}")
-        raise NotImplementedError()
-
-    async def update_consumption_point_in_time(
-        self,
-        consumption_context: ConsumptionContext,
-        point_in_time: datetime,
-        value: int,
-    ):
-        """
-        Update the gas consumption at a specific point in time
-
-        Args:
-            consumption_context (ConsumptionContext): Consumption context
-            point_in_time (date): Point in time
-            value (int): Gas consumption in kWh
-        """
-        logger.debug(f"Updating point in time: {point_in_time} with value: {value}")
         raise NotImplementedError()
 
     async def handle_consumption_midnight_case(

@@ -11,7 +11,7 @@ class Device(GazBoiler):
         super().__init__(boiler.service)
 
     def get_gas_usage(self):
-        raw_consumption = self.service.getProperty("heating.gas.consumption.heating")
+        raw_consumption = self.service.getProperty("heating.gas.consumption.total")
 
         consumption_parsed = Consumption(
             timestamp=datetime.fromisoformat(raw_consumption["timestamp"]),
