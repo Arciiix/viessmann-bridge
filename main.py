@@ -9,7 +9,7 @@ from viessmann_bridge.work import ViessmannBridge
 def main():
     logger.info("Starting viessmann_bridge")
 
-    config = load_config()
+    config = asyncio.run(load_config())
     device = init_vicare_device(config)
 
     bridge = ViessmannBridge(device)

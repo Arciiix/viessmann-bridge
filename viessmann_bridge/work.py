@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime, timedelta
+from viessmann_bridge.config import get_actions, get_config
 from viessmann_bridge.consumption import ConsumptionContext
 from viessmann_bridge.device import Device
 from viessmann_bridge.logger import logger
@@ -22,7 +24,23 @@ class ViessmannBridge:
             ctx.total_consumption = sum(ctx.gas_consumption.year)
 
             # TODO: Update the historical values for the previous days in Domoticz
-            # TODO: Also, if the previous total is different from the current one, update it
+
+            for action in get_actions():
+                # Convert the array of daily values to a dictionary with dates
+                # The day_readat is the date of the last value in the array
+                # The next values are for previous days (day_readat - 1, day_readat - 2, etc.)
+                daily_values = {
+                    ctx.gas_consumption.day_readat.date()
+                    - timedelta(days=i): ctx.gas_consumption.day[i]
+                    for i in range(len(ctx.gas_consumption.day))
+                }
+
+                logger.debug(f"Daily values: {daily_values}")
+
+                await action.update_daily_consumption_stats(ctx, daily_values)
+                await action.update_current_total_consumption(
+                    ctx, ctx.total_consumption
+                )
 
             return
 
@@ -43,7 +61,13 @@ class ViessmannBridge:
 
             ctx.previous_consumption_daily = ctx.gas_consumption.day
 
-            # TODO: Send to Domoticz/HomeAssistant
+            await asyncio.gather(
+                *[
+                    action.update_current_total_consumption(ctx, ctx.total_consumption)
+                    for action in get_actions()
+                ]
+            )
+
             logger.info(
                 f"Total consumption: {ctx.total_consumption} m3 (offset: {counter_offset} m3). Sum of daily: {ctx.gas_consumption.day} m3"
             )
@@ -64,8 +88,6 @@ class ViessmannBridge:
                 f"The previous day's consumption - previous: {previous_previous_day} m3, current: {current_previous_day} m3, offset: {counter_offset} m3"
             )
 
-            # TODO: Update the historical values for the day
-
             ctx.previous_consumption_date = ctx.gas_consumption.day_readat.date()
             ctx.previous_consumption_daily = ctx.gas_consumption.day
 
@@ -74,14 +96,28 @@ class ViessmannBridge:
             ctx.total_consumption += new_offset
             logger.info(f"New day's consumption: {new_offset} m3")
 
-            # TODO: Update current day value (just the counter now)
+            await asyncio.gather(
+                *[
+                    action.handle_consumption_midnight_case(
+                        ctx,
+                        counter_offset,
+                        current_previous_day,
+                        ctx.gas_consumption.day[0],
+                        ctx.total_consumption,
+                    )
+                    for action in get_actions()
+                ]
+            )
 
     async def main_loop(self):
         logger.info("Starting working")
+        config = get_config()
         while True:
-            # TODO: Better sleep
-            await asyncio.sleep(10)
+            logger.debug("Sleeping")
+            await asyncio.sleep(config.sleep_interval_seconds)
+            logger.info(f"-- Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} --")
 
-            tasks = [self.handle_gas_usage()]
-            await asyncio.gather(*tasks)
+            # No concurrent calls because some of the actions might not be thread-safe
+            await self.handle_gas_usage()
+
             logger.info("All tasks done")
