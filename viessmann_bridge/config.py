@@ -12,11 +12,11 @@ class ViessmannCreds(BaseModel):
     client_id: str
 
 
-class Action(BaseModel):
+class ActionConfig(BaseModel):
     action_type: str
 
 
-class DomoticzAction(Action):
+class DomoticzActionConfig(ActionConfig):
     action_type: Literal["domoticz"]
 
     domoticz_url: str
@@ -27,7 +27,7 @@ class DomoticzAction(Action):
     gas_consumption_kwh_idx: Optional[int] = None
 
 
-class HomeAssistantAction(Action):
+class HomeAssistantActionConfig(ActionConfig):
     action_type: Literal["home_assistant"]
 
     home_assistant_url: str
@@ -38,7 +38,7 @@ class Config(BaseModel):
     viessmann_creds: ViessmannCreds
     device_index: int = 0
 
-    actions: list[Union[DomoticzAction, HomeAssistantAction]] = []
+    actions: list[Union[DomoticzActionConfig, HomeAssistantActionConfig]] = []
 
 
 GlobalConfig: Optional[Config] = None
