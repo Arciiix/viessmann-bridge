@@ -117,6 +117,17 @@ class Domoticz(Action):
                 }
             )
 
+        if self.config.gas_consumption_m3_idx is not None:
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.gas_consumption_m3_idx,
+                    "nvalue": 0,
+                    "svalue": f"{str(self._consumption_to_m3(total_consumption))}",
+                }
+            )
+
         logger.debug(f"Updated current total consumption: {total_consumption}")
 
     async def update_daily_consumption_stats(
@@ -158,6 +169,32 @@ class Domoticz(Action):
                         "idx": self.config.gas_consumption_kwh_idx,
                         "nvalue": 0,
                         "svalue": f"{str(total_consumption_on_that_day * 1000)};{value * 1000 if day != date.today() else 0};{time}",
+                    }
+                )
+                await asyncio.sleep(2)
+
+            if self.config.gas_consumption_m3_idx is not None:
+                await self._request(
+                    {
+                        "type": "command",
+                        "param": "udevice",
+                        "idx": self.config.gas_consumption_m3_idx,
+                        "nvalue": 0,
+                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day))};{self._consumption_to_m3(value)};{day.strftime('%Y-%m-%d')}",
+                    }
+                )
+
+                time = f"{day.strftime('%Y-%m-%d')} 00:00:00"
+
+                await asyncio.sleep(2)
+
+                await self._request(
+                    {
+                        "type": "command",
+                        "param": "udevice",
+                        "idx": self.config.gas_consumption_m3_idx,
+                        "nvalue": 0,
+                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day))};{self._consumption_to_m3(value) if day != date.today() else 0};{time}",
                     }
                 )
                 await asyncio.sleep(2)
