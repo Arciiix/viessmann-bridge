@@ -160,7 +160,7 @@ class Domoticz(Action):
 
         logger.debug(f"Updated current total consumption: {total_consumption}")
 
-    async def update_current_total_consumption_incresing(
+    async def update_current_total_consumption_increasing(
         self, consumption_context: ConsumptionContext, consumption_increase_offset: int
     ) -> None:
         logger.debug(
@@ -303,7 +303,7 @@ Handling midnight case with the following values:
         await self.update_current_total_consumption(
             consumption_context, total_counter, current_day_value
         )
-        await self.update_current_total_consumption_incresing(
+        await self.update_current_total_consumption_increasing(
             consumption_context,
             total_counter - consumption_context.previous_total_consumption,
         )

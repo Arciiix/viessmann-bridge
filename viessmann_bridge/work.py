@@ -44,7 +44,7 @@ class ViessmannBridge:
                 await action.update_current_total_consumption(
                     ctx, ctx.total_consumption, ctx.gas_consumption.day[0]
                 )
-                await action.update_current_total_consumption_incresing(ctx, 0)
+                await action.update_current_total_consumption_increasing(ctx, 0)
 
             return
 
@@ -76,7 +76,7 @@ class ViessmannBridge:
 
             await asyncio.gather(
                 *[
-                    action.update_current_total_consumption_incresing(
+                    action.update_current_total_consumption_increasing(
                         ctx, ctx.total_consumption - ctx.previous_total_consumption
                     )
                     for action in get_actions()

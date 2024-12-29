@@ -37,6 +37,11 @@ class HomeAssistantActionConfig(ActionConfig):
     action_type: Literal["home_assistant"]
 
     home_assistant_url: str
+    token: str
+
+    gas_usage_entity_id: Optional[str]
+    burner_modulation_entities_ids: list[str] = []
+    boiler_temperature_entity_id: Optional[str]
 
 
 class Action:
@@ -67,7 +72,7 @@ class Action:
         logger.debug(f"Updating current total consumption: {total_consumption}")
         raise NotImplementedError()
 
-    async def update_current_total_consumption_incresing(
+    async def update_current_total_consumption_increasing(
         self, consumption_context: ConsumptionContext, consumption_increase_offset: int
     ) -> None:
         """
