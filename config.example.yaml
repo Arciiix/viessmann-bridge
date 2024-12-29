@@ -1,18 +1,40 @@
 timezone: Europe/Warsaw
+sleep_interval_seconds: 300
 viessmann_creds:
   username: user@example.com
   password: YourPassword
   client_id: your_client_id
+device_index: 0 # Heating device index
+number_of_burners: 1
 actions:
   - action_type: domoticz
     domoticz_url: http://192.168.0.102:8000
+
+    # For counter type: Counter
     gas_consumption_kwh_idx: 2
-    boiler_temperature_idx: 3
+    gas_consumption_m3_idx: 3
+
+    boiler_temperature_idx: 4
+
+    # The length of modulation idxs is the same as the number of burners
     burner_modulation_idxs:
-      - 4
-    gas_consumption_kwh_increasing_idx: 5
-    gas_consumption_m3_increasing_idx: 6
+      - 5
+
+    # For counter type: Counter Incremental
+    gas_consumption_kwh_increasing_idx: 6
+    gas_consumption_m3_increasing_idx: 7
+
+    # If true, uses ?type=devices instead of ?type=command&param=getdevices
+    # Applies to Domoticz before 01.06.2023, please see: https://github.com/domoticz/domoticz-android/issues/692
+    use_legacy_device_endpoint: false
   - action_type: home_assistant
+    # Please also see comments on the Domoticz example above
+
     home_assistant_url: http://192.168.0.102:8123
     token: YOUR_HASS_REST_API_LONG_LIVED_TOKEN
+
     gas_usage_entity_id: sensor.gas_usage_kwh
+    burner_modulation_entities_ids:
+      - sensor.modulation_burner_0
+    boiler_temperature_entity_id: sensor.boiler_temperature
+
