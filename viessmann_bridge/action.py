@@ -20,8 +20,6 @@ class DomoticzActionConfig(ActionConfig):
     # Applies to Domoticz before 01.06.2023, please see: https://github.com/domoticz/domoticz-android/issues/692
     use_legacy_device_endpoint: bool = False
 
-    boiler_temp_idx: Optional[int] = None
-    burner_modulation_idx: Optional[int] = None
     gas_consumption_m3_idx: Optional[int] = None
     gas_consumption_kwh_idx: Optional[int] = None
 
@@ -29,7 +27,6 @@ class DomoticzActionConfig(ActionConfig):
     gas_consumption_kwh_increasing_idx: Optional[int] = None
 
     burner_modulation_idxs: list[int] = []
-
     boiler_temperature_idx: Optional[int] = None
 
 
