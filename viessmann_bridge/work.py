@@ -14,6 +14,7 @@ class ViessmannBridge:
 
     async def handle_gas_usage(self):
         ctx = self.consumption_context
+        ctx.previous_total_consumption = ctx.total_consumption
 
         ctx.gas_consumption = self.device.get_gas_usage()
 
@@ -23,7 +24,8 @@ class ViessmannBridge:
             ctx.previous_consumption_daily = ctx.gas_consumption.day
             ctx.total_consumption = sum(ctx.gas_consumption.year)
 
-            # TODO: Update the historical values for the previous days in Domoticz
+            # TODO: Maybe fetch the previous total consumption from the action (Domoticz/Home Assistant) instead?
+            ctx.previous_total_consumption = ctx.total_consumption
 
             for action in get_actions():
                 # Convert the array of daily values to a dictionary with dates
@@ -40,6 +42,7 @@ class ViessmannBridge:
                 await action.update_current_total_consumption(
                     ctx, ctx.total_consumption
                 )
+                await action.update_current_total_consumption_incresing(ctx, 0)
                 await action.update_daily_consumption_stats(ctx, daily_values)
 
             return
@@ -64,6 +67,15 @@ class ViessmannBridge:
             await asyncio.gather(
                 *[
                     action.update_current_total_consumption(ctx, ctx.total_consumption)
+                    for action in get_actions()
+                ]
+            )
+
+            await asyncio.gather(
+                *[
+                    action.update_current_total_consumption_incresing(
+                        ctx, ctx.total_consumption - ctx.previous_total_consumption
+                    )
                     for action in get_actions()
                 ]
             )

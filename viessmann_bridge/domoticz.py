@@ -97,7 +97,7 @@ class Domoticz(Action):
                     )
 
     def _consumption_to_m3(self, consumption: int) -> int:
-        return floor(gas_consumption_kwh_to_m3(consumption) * 1000)
+        return floor(gas_consumption_kwh_to_m3(consumption))
 
     async def update_current_total_consumption(
         self,
@@ -124,11 +124,40 @@ class Domoticz(Action):
                     "param": "udevice",
                     "idx": self.config.gas_consumption_m3_idx,
                     "nvalue": 0,
-                    "svalue": f"{str(self._consumption_to_m3(total_consumption))}",
+                    "svalue": f"{str(self._consumption_to_m3(total_consumption * 1000))}",
                 }
             )
 
         logger.debug(f"Updated current total consumption: {total_consumption}")
+
+    async def update_current_total_consumption_incresing(
+        self, consumption_context: ConsumptionContext, consumption_increase_offset: int
+    ) -> None:
+        logger.debug(
+            f"Updating current total consumption increasing: {consumption_increase_offset}"
+        )
+
+        if self.config.gas_consumption_kwh_increasing_idx is not None:
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.gas_consumption_kwh_increasing_idx,
+                    "nvalue": 0,
+                    "svalue": f"{str(consumption_increase_offset * 1000)}",
+                }
+            )
+
+        if self.config.gas_consumption_m3_increasing_idx is not None:
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.gas_consumption_m3_increasing_idx,
+                    "nvalue": 0,
+                    "svalue": f"{str(self._consumption_to_m3(consumption_increase_offset * 1000))}",
+                }
+            )
 
     async def update_daily_consumption_stats(
         self, consumption_context: ConsumptionContext, consumption: dict[date, int]
@@ -147,6 +176,8 @@ class Domoticz(Action):
                 consumption_context.total_consumption - consumption_after_this_day
             )
 
+            time = f"{day.strftime('%Y-%m-%d')} 00:00:00"
+
             if self.config.gas_consumption_kwh_idx is not None:
                 await self._request(
                     {
@@ -157,11 +188,7 @@ class Domoticz(Action):
                         "svalue": f"{str(total_consumption_on_that_day * 1000)};{value * 1000};{day.strftime('%Y-%m-%d')}",
                     }
                 )
-
-                time = f"{day.strftime('%Y-%m-%d')} 00:00:00"
-
                 await asyncio.sleep(2)
-
                 await self._request(
                     {
                         "type": "command",
@@ -180,21 +207,17 @@ class Domoticz(Action):
                         "param": "udevice",
                         "idx": self.config.gas_consumption_m3_idx,
                         "nvalue": 0,
-                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day))};{self._consumption_to_m3(value)};{day.strftime('%Y-%m-%d')}",
+                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day * 1000))};{self._consumption_to_m3(value * 1000)};{day.strftime('%Y-%m-%d')}",
                     }
                 )
-
-                time = f"{day.strftime('%Y-%m-%d')} 00:00:00"
-
                 await asyncio.sleep(2)
-
                 await self._request(
                     {
                         "type": "command",
                         "param": "udevice",
                         "idx": self.config.gas_consumption_m3_idx,
                         "nvalue": 0,
-                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day))};{self._consumption_to_m3(value) if day != date.today() else 0};{time}",
+                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day * 1000))};{self._consumption_to_m3(value * 1000) if day != date.today() else 0};{time}",
                     }
                 )
                 await asyncio.sleep(2)
@@ -219,6 +242,11 @@ Handling midnight case with the following values:
         assert consumption_context.previous_consumption_date is not None
 
         await self.update_current_total_consumption(consumption_context, total_counter)
+        await self.update_current_total_consumption_incresing(
+            consumption_context,
+            total_counter - consumption_context.previous_total_consumption,
+        )
+
         # Convert the array of daily values to a dictionary with dates
         # The day_readat is the date of the last value in the array
         # The next values are for previous days (day_readat - 1, day_readat - 2, etc.)

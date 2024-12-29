@@ -25,6 +25,9 @@ class DomoticzActionConfig(ActionConfig):
     gas_consumption_m3_idx: Optional[int] = None
     gas_consumption_kwh_idx: Optional[int] = None
 
+    gas_consumption_m3_increasing_idx: Optional[int] = None
+    gas_consumption_kwh_increasing_idx: Optional[int] = None
+
 
 class HomeAssistantActionConfig(ActionConfig):
     action_type: Literal["home_assistant"]
@@ -56,6 +59,25 @@ class Action:
             total_consumption (int): Gas consumption in kWh
         """
         logger.debug(f"Updating current total consumption: {total_consumption}")
+        raise NotImplementedError()
+
+    async def update_current_total_consumption_incresing(
+        self, consumption_context: ConsumptionContext, consumption_increase_offset: int
+    ) -> None:
+        """
+        Update the current total consumption by increasing the previous value.
+
+        The difference between this method and update_current_total_consumption is that
+        this method just 'adds' the new consumption to the previous value, while the
+        update_current_total_consumption method overrides the total consumption value.
+
+        Args:
+            consumption_context (ConsumptionContext): Consumption context
+            consumption_increase_offset (int): = new total consumption - previous total consumption
+        """
+        logger.debug(
+            f"Updating current total consumption increasing: {consumption_increase_offset}"
+        )
         raise NotImplementedError()
 
     async def update_daily_consumption_stats(

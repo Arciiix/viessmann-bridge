@@ -19,6 +19,9 @@ class Consumption(BaseModel):
 
 class ConsumptionContext:
     gas_consumption: Optional[Consumption] = None
-    total_consumption: int = 0  # TODO: Maybe fetch it from Domoticz or something?
+    total_consumption: int = 0
+    previous_total_consumption: int = (
+        0  # TODO: Maybe fetch it from Domoticz or something?
+    )
     previous_consumption_daily: list[int] = []
     previous_consumption_date: Optional[date] = None
