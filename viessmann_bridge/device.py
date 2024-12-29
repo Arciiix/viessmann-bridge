@@ -14,7 +14,9 @@ class Device(GazBoiler):
         raw_consumption = self.service.getProperty("heating.gas.consumption.total")
 
         consumption_parsed = Consumption(
-            timestamp=datetime.fromisoformat(raw_consumption["timestamp"]),
+            timestamp=datetime.fromisoformat(
+                raw_consumption["timestamp"].replace("Z", "+00:00")
+            ),
             day=raw_consumption["properties"]["day"]["value"],
             week=raw_consumption["properties"]["week"]["value"],
             month=raw_consumption["properties"]["month"]["value"],

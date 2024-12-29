@@ -56,6 +56,12 @@ pip install -r requirements.txt
 python main.py
 ```
 
+or, if you use [PM2](https://pm2.keymetrics.io/):
+
+```bash
+pm2 start main.py --name viessmann_prod --restart-delay 60000 --interpreter viessmann-venv/bin/python
+```
+
 ## Disclaimer
 
 This project is not affiliated with Viessmann, and it's not an official solution. It's a hobby project, and it's provided as-is. Use it at your own risk.

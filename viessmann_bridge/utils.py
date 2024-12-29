@@ -11,7 +11,7 @@ def to_local_time(utc: datetime) -> datetime:
 
 
 def parse_time(raw: str) -> datetime:
-    return to_local_time(datetime.fromisoformat(raw))
+    return to_local_time(datetime.fromisoformat(raw.replace("Z", "+00:00")))
 
 
 def gas_consumption_kwh_to_m3(kwh: float) -> float:
