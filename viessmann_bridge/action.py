@@ -28,6 +28,8 @@ class DomoticzActionConfig(ActionConfig):
     gas_consumption_m3_increasing_idx: Optional[int] = None
     gas_consumption_kwh_increasing_idx: Optional[int] = None
 
+    burner_modulation_idxs: list[int] = []
+
 
 class HomeAssistantActionConfig(ActionConfig):
     action_type: Literal["home_assistant"]
@@ -123,4 +125,14 @@ Handling midnight case with the following values:
     current_day_value: {current_day_value},
     total_counter: {total_counter}
 """)
+        raise NotImplementedError()
+
+    async def handle_burners_modulations(self, burners_modulations: list[int]):
+        """
+        Handle the modulation value of the burners.
+
+        Args:
+            burners_modulation (int): Burners modulation values (0% - 100%)
+        """
+        logger.debug(f"Handling burners modulations: {burners_modulations}")
         raise NotImplementedError()

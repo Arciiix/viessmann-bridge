@@ -121,6 +121,16 @@ class ViessmannBridge:
                 ]
             )
 
+    async def handle_burners(self):
+        config = get_config()
+        burners_modulations = self.device.get_burners_modulations(
+            config.number_of_burners
+        )
+        logger.info(f"Burners modulations: {burners_modulations}")
+
+        for action in get_actions():
+            await action.handle_burners_modulations(burners_modulations)
+
     async def main_loop(self):
         logger.info("Starting working")
         config = get_config()
@@ -133,6 +143,7 @@ class ViessmannBridge:
 
             # No concurrent calls because some of the actions might not be thread-safe
             await self.handle_gas_usage()
+            await self.handle_burners()
 
             logger.info("All tasks done")
             await asyncio.sleep(config.sleep_interval_seconds)

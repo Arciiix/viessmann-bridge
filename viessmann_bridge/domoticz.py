@@ -263,3 +263,25 @@ Handling midnight case with the following values:
         await self.update_daily_consumption_stats(consumption_context, daily_values)
 
         logger.debug("Handled midnight case")
+
+    async def handle_burners_modulations(self, modulations: list[int]) -> None:
+        logger.debug(f"Handling burners modulations: {modulations}")
+
+        if self.config.burner_modulation_idxs is not None:
+            for idx, modulation in zip(self.config.burner_modulation_idxs, modulations):
+                if idx is not None:
+                    await self._request(
+                        {
+                            "type": "command",
+                            "param": "udevice",
+                            "idx": idx,
+                            "nvalue": 0,
+                            "svalue": str(modulation),
+                        }
+                    )
+                else:
+                    logger.warning(
+                        f"Skipping burners modulation update for index {idx}"
+                    )
+
+        logger.debug("Handled burners modulations")

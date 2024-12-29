@@ -25,6 +25,7 @@ class Config(BaseModel):
     sleep_interval_seconds: int = 300
     viessmann_creds: ViessmannCreds
     device_index: int = 0
+    number_of_burners: int = 1
 
     actions: list[Union[DomoticzActionConfig, HomeAssistantActionConfig]] = []
 

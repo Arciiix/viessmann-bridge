@@ -34,3 +34,12 @@ class Device(GazBoiler):
         )
 
         return consumption_parsed
+
+    def get_burners_modulations(self, number_of_burners: int) -> list[int]:
+        modulations: list[int] = []
+
+        for i in range(number_of_burners):
+            raw_modulation = self.service.getProperty(f"heating.burners.{i}.modulation")
+            modulations.append(raw_modulation["properties"]["value"]["value"])
+
+        return modulations
