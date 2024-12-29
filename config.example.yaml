@@ -1,0 +1,18 @@
+timezone: Europe/Warsaw
+viessmann_creds:
+  username: user@example.com
+  password: YourPassword
+  client_id: your_client_id
+actions:
+  - action_type: domoticz
+    domoticz_url: http://192.168.0.102:8000
+    gas_consumption_kwh_idx: 2
+    boiler_temperature_idx: 3
+    burner_modulation_idxs:
+      - 4
+    gas_consumption_kwh_increasing_idx: 5
+    gas_consumption_m3_increasing_idx: 6
+  - action_type: home_assistant
+    home_assistant_url: http://192.168.0.102:8123
+    token: YOUR_HASS_REST_API_LONG_LIVED_TOKEN
+    gas_usage_entity_id: sensor.gas_usage_kwh
