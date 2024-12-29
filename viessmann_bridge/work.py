@@ -126,10 +126,17 @@ class ViessmannBridge:
         burners_modulations = self.device.get_burners_modulations(
             config.number_of_burners
         )
-        logger.info(f"Burners modulations: {burners_modulations}")
+        logger.info(f"Burners modulations: {burners_modulations}%")
 
         for action in get_actions():
             await action.handle_burners_modulations(burners_modulations)
+
+    async def handle_boiler_temperature(self):
+        boiler_temperature = self.device.get_boiler_temperature()
+        logger.info(f"Boiler temperature: {boiler_temperature}°C")
+
+        for action in get_actions():
+            await action.handle_boiler_temperature(boiler_temperature)
 
     async def main_loop(self):
         logger.info("Starting working")
@@ -144,6 +151,7 @@ class ViessmannBridge:
             # No concurrent calls because some of the actions might not be thread-safe
             await self.handle_gas_usage()
             await self.handle_burners()
+            await self.handle_boiler_temperature()
 
             logger.info("All tasks done")
             await asyncio.sleep(config.sleep_interval_seconds)

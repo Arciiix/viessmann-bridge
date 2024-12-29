@@ -265,7 +265,7 @@ Handling midnight case with the following values:
         logger.debug("Handled midnight case")
 
     async def handle_burners_modulations(self, modulations: list[int]) -> None:
-        logger.debug(f"Handling burners modulations: {modulations}")
+        logger.debug(f"Handling burners modulations: {modulations}%")
 
         if self.config.burner_modulation_idxs is not None:
             for idx, modulation in zip(self.config.burner_modulation_idxs, modulations):
@@ -285,3 +285,19 @@ Handling midnight case with the following values:
                     )
 
         logger.debug("Handled burners modulations")
+
+    async def handle_boiler_temperature(self, temperature: float) -> None:
+        logger.debug(f"Handling boiler temperature: {temperature}°C")
+
+        if self.config.boiler_temperature_idx is not None:
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.boiler_temperature_idx,
+                    "nvalue": 0,
+                    "svalue": str(temperature),
+                }
+            )
+
+        logger.debug("Handled boiler temperature")

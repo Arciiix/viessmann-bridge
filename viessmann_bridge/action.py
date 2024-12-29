@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Literal, Optional
 
 from pydantic import BaseModel
@@ -29,6 +29,8 @@ class DomoticzActionConfig(ActionConfig):
     gas_consumption_kwh_increasing_idx: Optional[int] = None
 
     burner_modulation_idxs: list[int] = []
+
+    boiler_temperature_idx: Optional[int] = None
 
 
 class HomeAssistantActionConfig(ActionConfig):
@@ -135,4 +137,14 @@ Handling midnight case with the following values:
             burners_modulation (int): Burners modulation values (0% - 100%)
         """
         logger.debug(f"Handling burners modulations: {burners_modulations}")
+        raise NotImplementedError()
+
+    async def handle_boiler_temperature(self, boiler_temperature: float):
+        """
+        Handle the boiler temperature.
+
+        Args:
+            boiler_temperature (float): Boiler temperature in Celsius
+        """
+        logger.debug(f"Handling boiler temperature: {boiler_temperature}")
         raise NotImplementedError()

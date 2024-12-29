@@ -43,3 +43,6 @@ class Device(GazBoiler):
             modulations.append(raw_modulation["properties"]["value"]["value"])
 
         return modulations
+
+    def get_boiler_temperature(self) -> float:
+        return self.getBoilerTemperature()
