@@ -48,7 +48,8 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Copy the `config.example.yaml` file to `config.yaml` and fill it with your data.
+3. Copy the [`config.example.yaml`](config.example.yaml) file to `config.yaml` and fill it with your data.
+   See this file for details.
 
 4. Run the bridge.
 
