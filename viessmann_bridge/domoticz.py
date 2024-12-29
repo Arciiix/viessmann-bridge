@@ -2,6 +2,7 @@ import asyncio
 import base64
 from datetime import date, datetime, timedelta
 from math import floor
+from urllib.parse import unquote_plus
 
 from viessmann_bridge.action import Action, DomoticzActionConfig
 from viessmann_bridge.consumption import ConsumptionContext
@@ -69,7 +70,7 @@ class Domoticz(Action):
                         ).decode(),
                     },
                 ) as response:
-                    logger.debug(response.request_info.real_url)
+                    logger.debug(unquote_plus(str(response.request_info.real_url)))
                     if response.status == 200:
                         logger.info(
                             f"Updated device {device} with AddDBLogEntry: {await response.text()}"
@@ -88,7 +89,8 @@ class Domoticz(Action):
             async with session.get(
                 f"{self.config.domoticz_url}/json.htm", params=params
             ) as response:
-                logger.debug(response.request_info.real_url)
+                logger.debug(unquote_plus(str(response.request_info.real_url)))
+
                 if response.status == 200:
                     logger.debug(f"Response: {await response.text()}")
                 else:
@@ -103,8 +105,12 @@ class Domoticz(Action):
         self,
         consumption_context: ConsumptionContext,
         total_consumption: int,
+        today: int,
     ) -> None:
         logger.debug(f"Updating current total consumption: {total_consumption}")
+
+        now_floor_5min = datetime.now().replace(second=0, microsecond=0)
+        now_floor_5min = now_floor_5min - timedelta(minutes=now_floor_5min.minute % 5)
 
         if self.config.gas_consumption_kwh_idx is not None:
             await self._request(
@@ -114,6 +120,17 @@ class Domoticz(Action):
                     "idx": self.config.gas_consumption_kwh_idx,
                     "nvalue": 0,
                     "svalue": f"{str(total_consumption * 1000)}",
+                }
+            )
+            await asyncio.sleep(2)
+
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.gas_consumption_kwh_idx,
+                    "nvalue": 0,
+                    "svalue": f"{str(total_consumption * 1000)};0;{now_floor_5min.strftime('%Y-%m-%d %H:%M:%S')}",
                 }
             )
 
@@ -127,6 +144,19 @@ class Domoticz(Action):
                     "svalue": f"{str(self._consumption_to_m3(total_consumption * 1000))}",
                 }
             )
+            await asyncio.sleep(2)
+
+            await self._request(
+                {
+                    "type": "command",
+                    "param": "udevice",
+                    "idx": self.config.gas_consumption_m3_idx,
+                    "nvalue": 0,
+                    "svalue": f"{str(self._consumption_to_m3(total_consumption * 1000))};0;{now_floor_5min.strftime('%Y-%m-%d %H:%M:%S')}",
+                }
+            )
+
+            await asyncio.sleep(2)
 
         logger.debug(f"Updated current total consumption: {total_consumption}")
 
@@ -168,15 +198,23 @@ class Domoticz(Action):
         consumption = dict(sorted(consumption.items()))
 
         for day, value in consumption.items():
+            if day == date.today():
+                continue
+
             consumption_after_this_day = sum(
-                [v for d, v in consumption.items() if d >= day]
+                [v for d, v in consumption.items() if d > day]
             )
 
             total_consumption_on_that_day = (
                 consumption_context.total_consumption - consumption_after_this_day
             )
 
-            time = f"{day.strftime('%Y-%m-%d')} 00:00:00"
+            base_time = datetime.combine(day, datetime.min.time())
+            times = [
+                base_time + timedelta(hours=23, minutes=55),
+                base_time + timedelta(hours=24, minutes=0),
+                base_time + timedelta(hours=24, minutes=5),
+            ]
 
             if self.config.gas_consumption_kwh_idx is not None:
                 await self._request(
@@ -189,16 +227,18 @@ class Domoticz(Action):
                     }
                 )
                 await asyncio.sleep(2)
-                await self._request(
-                    {
-                        "type": "command",
-                        "param": "udevice",
-                        "idx": self.config.gas_consumption_kwh_idx,
-                        "nvalue": 0,
-                        "svalue": f"{str(total_consumption_on_that_day * 1000)};{value * 1000 if day != date.today() else 0};{time}",
-                    }
-                )
-                await asyncio.sleep(2)
+                for time in times:
+                    time_str = time.strftime("%Y-%m-%d %H:%M:%S")
+                    await self._request(
+                        {
+                            "type": "command",
+                            "param": "udevice",
+                            "idx": self.config.gas_consumption_kwh_idx,
+                            "nvalue": 0,
+                            "svalue": f"{str(total_consumption_on_that_day * 1000)};0;{time_str}",
+                        }
+                    )
+                    await asyncio.sleep(2)
 
             if self.config.gas_consumption_m3_idx is not None:
                 await self._request(
@@ -211,16 +251,19 @@ class Domoticz(Action):
                     }
                 )
                 await asyncio.sleep(2)
-                await self._request(
-                    {
-                        "type": "command",
-                        "param": "udevice",
-                        "idx": self.config.gas_consumption_m3_idx,
-                        "nvalue": 0,
-                        "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day * 1000))};{self._consumption_to_m3(value * 1000) if day != date.today() else 0};{time}",
-                    }
-                )
-                await asyncio.sleep(2)
+
+                for time in times:
+                    time_str = time.strftime("%Y-%m-%d %H:%M:%S")
+                    await self._request(
+                        {
+                            "type": "command",
+                            "param": "udevice",
+                            "idx": self.config.gas_consumption_m3_idx,
+                            "nvalue": 0,
+                            "svalue": f"{str(self._consumption_to_m3(total_consumption_on_that_day * 1000))};0;{time_str}",
+                        }
+                    )
+                    await asyncio.sleep(2)
 
         logger.debug(f"Updated daily consumption stats: {consumption}")
 
@@ -239,13 +282,6 @@ Handling midnight case with the following values:
     current_day_value: {current_day_value},
     total_counter: {total_counter}
 """)
-        assert consumption_context.previous_consumption_date is not None
-
-        await self.update_current_total_consumption(consumption_context, total_counter)
-        await self.update_current_total_consumption_incresing(
-            consumption_context,
-            total_counter - consumption_context.previous_total_consumption,
-        )
 
         # Convert the array of daily values to a dictionary with dates
         # The day_readat is the date of the last value in the array
@@ -261,6 +297,16 @@ Handling midnight case with the following values:
         logger.debug(f"Daily values: {daily_values}")
 
         await self.update_daily_consumption_stats(consumption_context, daily_values)
+
+        assert consumption_context.previous_consumption_date is not None
+
+        await self.update_current_total_consumption(
+            consumption_context, total_counter, current_day_value
+        )
+        await self.update_current_total_consumption_incresing(
+            consumption_context,
+            total_counter - consumption_context.previous_total_consumption,
+        )
 
         logger.debug("Handled midnight case")
 

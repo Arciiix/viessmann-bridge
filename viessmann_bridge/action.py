@@ -54,6 +54,7 @@ class Action:
         self,
         consumption_context: ConsumptionContext,
         total_consumption: int,
+        today: int,
     ) -> None:
         """
         Update the current total consumption
@@ -61,6 +62,7 @@ class Action:
         Args:
             consumption_context (ConsumptionContext): Consumption context
             total_consumption (int): Gas consumption in kWh
+            today (int): Gas consumption in kWh for today
         """
         logger.debug(f"Updating current total consumption: {total_consumption}")
         raise NotImplementedError()

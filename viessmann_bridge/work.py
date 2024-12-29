@@ -39,11 +39,12 @@ class ViessmannBridge:
 
                 logger.debug(f"Daily values: {daily_values}")
 
+                await action.update_daily_consumption_stats(ctx, daily_values)
+
                 await action.update_current_total_consumption(
-                    ctx, ctx.total_consumption
+                    ctx, ctx.total_consumption, ctx.gas_consumption.day[0]
                 )
                 await action.update_current_total_consumption_incresing(ctx, 0)
-                await action.update_daily_consumption_stats(ctx, daily_values)
 
             return
 
@@ -66,7 +67,9 @@ class ViessmannBridge:
 
             await asyncio.gather(
                 *[
-                    action.update_current_total_consumption(ctx, ctx.total_consumption)
+                    action.update_current_total_consumption(
+                        ctx, ctx.total_consumption, ctx.gas_consumption.day[0]
+                    )
                     for action in get_actions()
                 ]
             )
