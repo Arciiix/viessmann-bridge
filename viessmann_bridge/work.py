@@ -65,10 +65,13 @@ class ViessmannBridge:
             return
 
         # If a new day didn't start, we just update the current value
-        if (
-            ctx.previous_consumption_date == ctx.gas_consumption.day_readat.date()
-            and ctx.previous_consumption_daily[-1] == ctx.gas_consumption.day[-1]
-        ):
+        if ctx.previous_consumption_date == ctx.gas_consumption.day_readat.date():
+            if ctx.previous_consumption_daily[-1] != ctx.gas_consumption.day[-1]:
+                logger.warning(
+                    f"Probably a new day started, but the value for the 'farthest' day in the daily usage is still the same. Previous: {ctx.previous_consumption_daily[-1]}, current: {ctx.gas_consumption.day[-1]}, all: {ctx.gas_consumption.day}; skipping..."
+                )
+                return
+
             previous_total_daily = sum(ctx.previous_consumption_daily)
             current_total_daily = sum(ctx.gas_consumption.day)
 
