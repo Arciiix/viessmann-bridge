@@ -25,6 +25,7 @@ class ViessmannBridge:
         #
         if (
             ctx.previous_consumption_daily is not None
+            and len(ctx.previous_consumption_daily) > 1
             and ctx.previous_consumption_daily[1:] != ctx.gas_consumption.day[1:]
             and ctx.previous_consumption_daily[1:-1] != ctx.gas_consumption.day[2:]
         ):
