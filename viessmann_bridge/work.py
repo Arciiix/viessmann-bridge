@@ -18,6 +18,21 @@ class ViessmannBridge:
 
         ctx.gas_consumption = self.device.get_gas_usage()
 
+        # Bugfix: sometimes the daily values are not updated and the data is nonsense (happened to me once)
+        # Check if either:
+        # - the daily values are not the same as the previous daily values (excluding the first value)
+        # - the daily values are not the same as the previous daily values but with offset of 1 (a new day can appear in new values)
+        #
+        if (
+            ctx.previous_consumption_daily is not None
+            and ctx.previous_consumption_daily[1:] != ctx.gas_consumption.day[1:]
+            and ctx.previous_consumption_daily[1:-1] != ctx.gas_consumption.day[2:]
+        ):
+            logger.error(
+                f"Daily values are weird: previous: {ctx.previous_consumption_daily}, current: {ctx.gas_consumption.day}. Skipping updating gas..."
+            )
+            return
+
         # If it's the first run, let's just update the daily values
         if ctx.previous_consumption_date is None:
             ctx.previous_consumption_date = ctx.gas_consumption.day_readat.date()
@@ -97,6 +112,13 @@ class ViessmannBridge:
             previous_previous_day = ctx.previous_consumption_daily[0]
 
             counter_offset = current_previous_day - previous_previous_day
+
+            if counter_offset < 0:
+                logger.warning(
+                    f"Counter offset is negative: {counter_offset}. Previous day: {previous_previous_day}, current day: {current_previous_day}"
+                )
+                counter_offset = 0
+
             ctx.total_consumption += counter_offset
 
             logger.info(
