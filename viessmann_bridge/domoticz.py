@@ -85,18 +85,22 @@ class Domoticz(Action):
             f"Requesting Domoticz {self.config.domoticz_url} with params {params}"
         )
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                f"{self.config.domoticz_url}/json.htm", params=params
-            ) as response:
-                logger.debug(unquote_plus(str(response.request_info.real_url)))
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"{self.config.domoticz_url}/json.htm", params=params
+                ) as response:
+                    logger.debug(unquote_plus(str(response.request_info.real_url)))
 
-                if response.status == 200:
-                    logger.debug(f"Response: {await response.text()}")
-                else:
-                    logger.error(
-                        f"Failed to request Domoticz {self.config.domoticz_url}: {response.status}"
-                    )
+                    if response.status == 200:
+                        logger.debug(f"Response: {await response.text()}")
+                    else:
+                        logger.error(
+                            f"Failed to request Domoticz {self.config.domoticz_url}: {response.status}"
+                        )
+        except Exception as e:
+            logger.error(f"Failed to request Domoticz: {e}")
+            logger.exception(e)
 
     def _consumption_to_m3(self, consumption: int) -> int:
         return floor(gas_consumption_kwh_to_m3(consumption))

@@ -17,27 +17,31 @@ class HomeAssistant(Action):
         pass
 
     async def _request(self, endpoint: str, data: dict) -> None:
-        logger.debug(
-            f"Requesting Home Assistant {self.config.home_assistant_url} with data: {data}"
-        )
+        try:
+            logger.debug(
+                f"Requesting Home Assistant {self.config.home_assistant_url} with data: {data}"
+            )
 
-        headers = {
-            "Authorization": f"Bearer {self.config.token}",
-            "Content-Type": "application/json",
-        }
+            headers = {
+                "Authorization": f"Bearer {self.config.token}",
+                "Content-Type": "application/json",
+            }
 
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post(
-                f"{self.config.home_assistant_url}/{endpoint}", data=data
-            ) as response:
-                logger.debug(unquote_plus(str(response.request_info.real_url)))
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.post(
+                    f"{self.config.home_assistant_url}/{endpoint}", data=data
+                ) as response:
+                    logger.debug(unquote_plus(str(response.request_info.real_url)))
 
-                if response.status == 200:
-                    logger.debug(f"Response: {await response.text()}")
-                else:
-                    logger.error(
-                        f"Failed to request Home Assistant {self.config.home_assistant_url}: {response.status}"
-                    )
+                    if response.status == 200:
+                        logger.debug(f"Response: {await response.text()}")
+                    else:
+                        logger.error(
+                            f"Failed to request Home Assistant {self.config.home_assistant_url}: {response.status}"
+                        )
+        except Exception as e:
+            logger.error(f"Failed to request Home Assistant: {e}")
+            logger.exception(e)
 
     async def update_current_total_consumption(
         self,
